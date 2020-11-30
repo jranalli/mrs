@@ -99,10 +99,10 @@ def load_epoch(save_dir, resume_epoch, model, optm, device, model_key='state_dic
     :return:
     """
     checkpoint = torch.load(
-        os.path.join(save_dir, 'epoch-' + str(resume_epoch) + '.pth.tar'),
+        os.path.join(save_dir, 'epoch-' + str(int(resume_epoch)) + '.pth.tar'),
         map_location=lambda storage, loc: storage)  # Load all tensors onto the CPU
     print("Initializing weights from: {}...".format(
-        os.path.join(save_dir, 'epoch-' + str(resume_epoch) + '.pth.tar')))
+        os.path.join(save_dir, 'epoch-' + str(int(resume_epoch)) + '.pth.tar')))
     model.load_state_dict(checkpoint[model_key])
     load_optim(optm, checkpoint['opt_dict'], device)
 
