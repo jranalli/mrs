@@ -158,6 +158,10 @@ def get_dataset_stats(ds_name, img_dir, load_func=None, mean_val=([0.485, 0.456,
         from data.ct_finetune import preprocess
         val = preprocess.get_stats_pb(img_dir)[0]
         print('Use {} mean std stats: {}'.format(ds_name, val))
+    elif ds_name == 'sd_finetune':
+        from data.sd_finetune import preprocess
+        val = preprocess.get_stats_pb(img_dir)[0]
+        print('Use {} mean std stats: {}'.format(ds_name, val))
     elif load_func:
         val = process_block.ValueComputeProcess(
             name=ds_name,

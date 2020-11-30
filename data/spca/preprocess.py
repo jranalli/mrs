@@ -25,7 +25,7 @@ def get_images(data_dir, valid_percent=0.5, split=False):
     lbl_files = [lbl_files[a] for a in ind]'''
 
     assert len(rgb_files) == len(lbl_files)
-    city_names = ['Fresno', 'Modesto', 'Stockton']
+    city_names = ['Fresno', 'Modesto', 'Stockton', 'aus']
     city_files = {city_name: [(rgb_file, lbl_file) for (rgb_file, lbl_file) in zip(rgb_files, lbl_files)
                               if city_name in rgb_file] for city_name in city_names}
     train_files, valid_files = [], []
@@ -39,13 +39,13 @@ def get_images(data_dir, valid_percent=0.5, split=False):
         return [a[0] for a in valid_files], [a[1] for a in valid_files]
 
 
-def create_dataset(data_dir, save_dir, patch_size, pad, overlap, valid_percent=0.2, visualize=False):
+def create_dataset(data_dir, save_dir, patch_size, pad, overlap, valid_percent=0.1, visualize=False):
     # create folders and files
     patch_dir = os.path.join(save_dir, 'patches')
     misc_utils.make_dir_if_not_exist(patch_dir)
-    record_file_train = open(os.path.join(save_dir, 'file_list_train_{}_2.txt').format(
+    record_file_train = open(os.path.join(save_dir, 'file_list_train_{}.txt').format(
         misc_utils.float2str(valid_percent)), 'w+')
-    record_file_valid = open(os.path.join(save_dir, 'file_list_valid_{}_2.txt').format(
+    record_file_valid = open(os.path.join(save_dir, 'file_list_valid_{}.txt').format(
         misc_utils.float2str(valid_percent)), 'w+')
     train_files, valid_files = get_images(data_dir, valid_percent, split=True)
 
@@ -91,14 +91,14 @@ def get_stats_pb(img_dir):
 
 
 if __name__ == '__main__':
-    img_files = natsorted(glob(os.path.join(r'/media/ei-edl01/data/uab_datasets/spca/data/Original_Tiles', '*RGB.jpg')))
+    img_files = natsorted(glob(os.path.join(r'/home/wh145/data/caemo', '*RGB.jpg')))
 
     np.random.seed(931004)
     ps = 512
     ol = 0
     pd = 0
-    create_dataset(data_dir=r'/media/ei-edl01/data/uab_datasets/spca/data/Original_Tiles',
-                   save_dir=r'/hdd/mrs/spca', patch_size=(ps, ps), pad=pd, overlap=ol, visualize=False, valid_percent=0.5)
+    create_dataset(data_dir=r'/home/wh145/data/caemo',
+                   save_dir=r'/home/wh145/data/caemo/ps_512_ol_0', patch_size=(ps, ps), pad=pd, overlap=ol, visualize=False, valid_percent=0.1)
 
     # val = get_stats_pb(r'/media/ei-edl01/data/uab_datasets/spca/data/Original_Tiles')[0]
 

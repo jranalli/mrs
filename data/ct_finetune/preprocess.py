@@ -20,9 +20,10 @@ from mrs_utils import misc_utils, process_block
 DS_NAME = 'ct_finetune'
 
 
-def get_images(data_dir, valid_percent=0.2, split=False):
-    rgb_files = natsorted(glob(os.path.join(data_dir, 'images', '*.jpg')))
-    lbl_files = natsorted(glob(os.path.join(data_dir, 'annotations', '*.png')))
+def get_images(data_dir, valid_percent=0, split=False):
+    rgb_files = natsorted(glob(os.path.join(data_dir, '*.jpg')))
+    lbl_files = natsorted(glob(os.path.join(data_dir, '*.png')))
+    import pdb; pdb.set_trace()
     assert len(rgb_files) == len(lbl_files)
     # while True:
     #     valid_idx = np.random.randint(0, len(lbl_files))
@@ -100,5 +101,5 @@ if __name__ == '__main__':
     ps = 512
     ol = 0
     pd = 0
-    create_dataset(data_dir=r'/hdd/wh145/data/ct_finetune',
-                   save_dir=r'/hdd/wh145/data/ct_finetune', patch_size=(ps, ps), pad=pd, overlap=ol, visualize=False)
+    create_dataset(data_dir=r'/home/wh145/data/ct_valid/new_100820',
+                   save_dir=r'/home/wh145/data/ct_valid/new_100820/ps_512', patch_size=(ps, ps), pad=pd, overlap=ol, visualize=False)

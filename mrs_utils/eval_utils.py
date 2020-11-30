@@ -13,6 +13,7 @@ import skimage.transform
 import numpy as np
 from tqdm import tqdm
 from skimage import measure
+from skimage.morphology import dilation, disk
 from scipy.spatial import KDTree
 from sklearn.metrics import precision_recall_curve, average_precision_score
 
@@ -35,10 +36,10 @@ def display_group(reg_groups, size, img=None, need_return=False):
     :return:
     """
     group_map = np.zeros(size, dtype=np.int)
-    for cnt, group in enumerate(reg_groups):
-        for g in group:
-            coords = np.array(g.coords)
-            group_map[coords[:, 0], coords[:, 1]] = cnt
+    for cnt, g in enumerate(reg_groups):
+        # for g in group:
+        coords = np.array(g.coords)
+        group_map[coords[:, 0], coords[:, 1]] = cnt + 1
     if need_return:
         return group_map
     else:
@@ -56,8 +57,8 @@ def get_stats_from_group(reg_group, conf_img=None):
     :return:
     """
     coords = []
-    for g in reg_group:
-        coords.extend(g.coords)
+    # for g in reg_group:
+    coords.extend(reg_group.coords)
     coords = np.array(coords)
     if conf_img is not None:
         conf = np.mean(conf_img[coords[:, 0], coords[:, 1]])
@@ -123,7 +124,7 @@ def compute_iou(coords_a, coords_b, size):
 
 
 class ObjectScorer(object):
-    def __init__(self, min_region=5, min_th=0.5, link_r=20, eps=2):
+    def __init__(self, min_region=5, min_th=0.5, dilation_size=12, link_r=20, eps=2):
         """
         Object-wise scoring metric: the conf map instead of prediction map is needed
         The conf map will first be binarized by certain threshold, then any connected components
@@ -141,6 +142,7 @@ class ObjectScorer(object):
         """
         self.min_region = min_region
         self.min_th = min_th
+        self.dilation_size = dilation_size
         self.link_r = link_r
         self.eps = eps
 
@@ -190,6 +192,24 @@ class ObjectScorer(object):
         """
         # get connected components
         im_binary = conf_map >= self.min_th
+
+        # do min_region thresholding before adding dilation
+        im_label = measure.label(im_binary)
+        reg_props = [a for a in measure.regionprops(im_label, conf_map) if a.area >= self.min_region]
+        
+        # rasterize post min_region map
+        dummy = np.zeros(im_label.shape, dtype=int)
+        for reg in reg_props:
+            coords = np.array(reg.coords)
+            dummy[coords[:, 0], coords[:, 1]] = 1
+        im_binary = dummy
+        
+        # add dilation
+        if self.dilation_size < 0 or not isinstance(self.dilation_size, int):
+            return ValueError("Dilation size must be a positive integer")
+        elif self.dilation_size > 0:
+            im_binary = dilation(im_binary, disk(self.dilation_size))
+
         im_label = measure.label(im_binary)
         reg_props = measure.regionprops(im_label, conf_map)
         # remove regions that are smaller than threshold
@@ -197,16 +217,17 @@ class ObjectScorer(object):
         # group objects
         centroids = self._reg_to_centroids(reg_props)
         if len(centroids) > 0:
-            kdt = KDTree(centroids)
-            connect_pair = kdt.query_pairs(self.link_r, eps=self.eps)
-            groups = self._group_pairs(connect_pair, reg_props)
-            return groups
+            # kdt = KDTree(centroids)
+            # connect_pair = kdt.query_pairs(self.link_r, eps=self.eps)
+            # groups = self._group_pairs(connect_pair, reg_props)
+            # return groups
+            return reg_props
         else:
             return []
 
 
-def score(pred, lbl, min_region=5, min_th=0.5, link_r=20, eps=2, iou_th=0.5):
-    obj_scorer = ObjectScorer(min_region, min_th, link_r, eps)
+def score(pred, lbl, min_region=5, min_th=0.5, dilation_size=5, link_r=20, eps=2, iou_th=0.5):
+    obj_scorer = ObjectScorer(min_region, min_th, dilation_size, link_r, eps)
 
     group_pred = obj_scorer.get_object_groups(pred)
     group_lbl =obj_scorer. get_object_groups(lbl)
@@ -387,7 +408,7 @@ class Evaluator:
             self.decode_func = None
             self.encode_func = None
             self.class_names = ['panel',]
-        elif ds_name == 'spca':
+        elif ds_name == 'ct_finetune':
             from data.ct_finetune import preprocess
             self.rgb_files, self.lbl_files = preprocess.get_images(
                 data_dir, **kwargs)
@@ -396,6 +417,15 @@ class Evaluator:
             self.decode_func = None
             self.encode_func = None
             self.class_names = ['panel', ]
+        # elif ds_name == 'sd_finetune':
+        #     from data.sd_finetune import preprocess
+        #     self.rgb_files, self.lbl_files = preprocess.get_images(
+        #         data_dir, **kwargs)
+        #     assert len(self.rgb_files) == len(self.lbl_files)
+        #     self.truth_val = 255
+        #     self.decode_func = None
+        #     self.encode_func = None
+        #     self.class_names = ['panel', ]
         elif load_func:
             self.truth_val = kwargs.pop('truth_val', 1)
             self.decode_func = kwargs.pop('decode_func', None)
@@ -450,8 +480,7 @@ class Evaluator:
                 tile_preds = self.infer_tile(model, rgb, grid_list, patch_size, tile_dim, tile_dim_pad, lbl_margin)
 
             if save_conf:
-                misc_utils.save_file(os.path.join(pred_dir, '{}.npy'.format(file_name)),
-                                     scipy.special.softmax(tile_preds, axis=-1)[:, :, 1])
+                misc_utils.save_file(os.path.join(pred_dir, '{}.npy'.format(file_name)), tile_preds[:, :, 1])
             tile_preds = np.argmax(tile_preds, -1)
             iou_score = metric_utils.iou_metric(lbl/self.truth_val, tile_preds, eval_class=eval_class)
             pstr, rstr = self.get_result_strings(file_name, iou_score, delta)
@@ -529,8 +558,7 @@ class Evaluator:
                 tile_preds = self.infer_tile(model, rgb, grid_list, patch_size, tile_dim, tile_dim_pad, lbl_margin)
 
             if save_conf:
-                misc_utils.save_file(os.path.join(pred_dir, '{}_conf.npy'.format(file_name)),
-                                     scipy.special.softmax(tile_preds, axis=-1)[:, :, 1])
+                misc_utils.save_file(os.path.join(pred_dir, '{}_conf.png'.format(file_name)), (tile_preds[:, :, 1] * 255).astype(np.uint8))
 
             tile_preds = np.argmax(tile_preds, -1)
 
@@ -542,7 +570,7 @@ class Evaluator:
             if visualize:
                 vis_utils.compare_figures([rgb, pred_img], (1, 2), fig_size=(12, 5))
 
-            misc_utils.save_file(os.path.join(pred_dir, '{}{}.{}'.format(file_name, ext, file_ext)), pred_img)
+            # misc_utils.save_file(os.path.join(pred_dir, '{}{}.{}'.format(file_name, ext, file_ext)), pred_img)
 
 
 class BaseEnsemble(object):
