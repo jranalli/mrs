@@ -411,15 +411,15 @@ class Evaluator:
             self.decode_func = None
             self.encode_func = None
             self.class_names = ['panel',]
-        elif ds_name == 'ct_finetune':
-            from data.ct_finetune import preprocess
-            self.rgb_files, self.lbl_files = preprocess.get_images(
-                data_dir, **kwargs)
-            assert len(self.rgb_files) == len(self.lbl_files)
-            self.truth_val = 1
-            self.decode_func = None
-            self.encode_func = None
-            self.class_names = ['panel', ]
+        # elif ds_name == 'ct_finetune':
+        #     from data.ct_finetune import preprocess
+        #     self.rgb_files, self.lbl_files = preprocess.get_images(
+        #         data_dir, **kwargs)
+        #     assert len(self.rgb_files) == len(self.lbl_files)
+        #     self.truth_val = 1
+        #     self.decode_func = None
+        #     self.encode_func = None
+        #     self.class_names = ['panel', ]
         # elif ds_name == 'sd_finetune':
         #     from data.sd_finetune import preprocess
         #     self.rgb_files, self.lbl_files = preprocess.get_images(
