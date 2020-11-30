@@ -28,7 +28,7 @@ CONFIG_FILE = 'temp_config_dg.json'
 
 def read_config():
     parser = argparse.ArgumentParser()
-    args, extras = parser.parse_known_args(sys.argv[1:])
+    _, extras = parser.parse_known_args(sys.argv[1:])
     cfg_dict = misc_utils.parse_args(extras)
     if 'config' not in cfg_dict:
         cfg_dict['config'] = CONFIG_FILE
@@ -93,6 +93,7 @@ def train_model(args, device, parallel):
     # make data loader
     ds_cfgs = [a for a in sorted(args.keys()) if 'dataset' in a]
     assert ds_cfgs[0] == 'dataset'
+    mean, std = args[ds_cfgs[0]]['mean'], args[ds_cfgs[0]]['std'] # read default mean and std first
 
     train_val_loaders = {'train': [], 'valid': []}
     for ds_cfg in ds_cfgs:
@@ -104,6 +105,8 @@ def train_model(args, device, parallel):
         mean, std = network_io.get_dataset_stats(args[ds_cfg]['ds_name'], args[ds_cfg]['data_dir'],
                                                  mean_val=(eval(args[ds_cfg]['mean']), eval(args[ds_cfg]['std'])),
                                                  load_func=load_func, file_list=args[ds_cfg]['train_file'])
+        args[ds_cfg]['mean'], args[ds_cfg]['std'] = str(tuple(mean)), str(tuple(std)) # update args mean and std with actual values being used
+        
         tsfm_train, tsfm_valid = network_io.create_tsfm(args, mean, std)
         train_loader = DataLoader(data_loader.get_loader(
             args[ds_cfg]['data_dir'], args[ds_cfg]['train_file'], transforms=tsfm_train,
@@ -119,6 +122,7 @@ def train_model(args, device, parallel):
                 batch_size=int(args[ds_cfg]['batch_size']), shuffle=False, num_workers=int(args[ds_cfg]['num_workers']))
             print('Training model on the {} dataset'.format(args[ds_cfg]['ds_name']))
             train_val_loaders['valid'].append(valid_loader)
+    misc_utils.save_file(os.path.join(args['save_dir'], 'config.json'), args) # save config with actual mean and std used
 
     # train the model
     loss_dict = {}
@@ -159,7 +163,6 @@ def main():
     misc_utils.set_random_seed(cfg['random_seed'])
     # make training directory
     misc_utils.make_dir_if_not_exist(cfg['save_dir'])
-    misc_utils.save_file(os.path.join(cfg['save_dir'], 'config.json'), cfg)
 
     # train the model
     train_model(cfg, device, parallel)
