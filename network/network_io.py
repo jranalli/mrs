@@ -15,7 +15,6 @@ from torch import optim
 from albumentations.pytorch import ToTensorV2
 
 # Own modules
-from data import data_utils
 from mrs_utils import misc_utils, metric_utils, process_block
 from network import unet, pspnet, dlinknet, deeplabv3, network_utils
 
@@ -106,17 +105,23 @@ def create_optimizer(optm_name, train_params, lr):
     return optm
 
 
-def create_tsfm(args, mean, std):
+def create_tsfm(args, mean, std, normalize=True, tsfms=None):
     """
     Create transform based on configuration
     :param args: the argument parameters defined in config.py
     :param mean: mean of the dataset
     :param std: std of the dataset
+    :param normalize: if True, will normalize the dataset
+    :param tsfms: transforms used to augment the data, if None, will use the default ones
     :return: corresponding train and validation transforms
     """
     input_size = eval(args['dataset']['input_size'])
     crop_size = eval(args['dataset']['crop_size'])
-    tsfms = [A.Flip(), A.RandomRotate90(), A.Normalize(mean=mean, std=std), ToTensorV2()]
+    if tsfms is None:
+        if normalize:
+            tsfms = [A.Flip(), A.RandomRotate90(), A.Normalize(mean=mean, std=std), ToTensorV2()]
+        else:
+            tsfms = [A.Flip(), A.RandomRotate90(), ToTensorV2()]
     if input_size[0] > crop_size[0] and input_size[1] > crop_size[1]:
         tsfm_train = A.Compose([A.RandomCrop(*crop_size)] + tsfms)
         tsfm_valid = A.Compose([A.RandomCrop(*crop_size)] + tsfms[2:])
@@ -129,7 +134,8 @@ def create_tsfm(args, mean, std):
     return tsfm_train, tsfm_valid
 
 
-def get_dataset_stats(ds_name, img_dir, load_func=None, mean_val=([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])):
+def get_dataset_stats(ds_name, img_dir, load_func=None, file_list=None,
+                      mean_val=([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])):
     if ds_name == 'inria':
         from data.inria import preprocess
         val = preprocess.get_stats_pb(img_dir)[0]
@@ -163,16 +169,24 @@ def get_dataset_stats(ds_name, img_dir, load_func=None, mean_val=([0.485, 0.456,
         val = preprocess.get_stats_pb(img_dir)[0]
         print('Use {} mean std stats: {}'.format(ds_name, val))
     elif load_func:
-        val = process_block.ValueComputeProcess(
-            name=ds_name,
-            path=os.path.join(os.path.dirname(__file__), '../data/stats/custom'),
-            save_path=os.path.join(os.path.dirname(__file__), '../data/stats/custom/{}.npy'.format(ds_name)),
-            func=load_func). \
-            run().val
-        print('Use {} mean std stats: {}'.format(ds_name, val))
+        try:
+            val = process_block.ValueComputeProcess(
+                ds_name, os.path.join(os.path.dirname(__file__), '../data/stats/custom'),
+                os.path.join(os.path.dirname(__file__), '../data/stats/custom/{}.npy'.format(ds_name)),
+                func=load_func). \
+                run(img_dir=img_dir, file_list=file_list).val
+            print('Use {} mean std stats: {}'.format(ds_name, val))
+        except ValueError:
+            print('Dataset {} is not supported, use default mean stats instead'.format(ds_name))
+            return np.array(mean_val)
     else:
-        print('Dataset {} is not supported, use default mean stats instead'.format(ds_name))
-        return np.array(mean_val)
+        try:
+            val = misc_utils.load_file(os.path.join(os.path.realpath(os.path.join(os.path.dirname(__file__), '..')),
+                                                    'data/stats/custom/{}.npy'.format(ds_name)))
+            print('Use {} mean std stats: {}'.format(ds_name, val))
+        except (FileNotFoundError, OSError):
+            print('Dataset {} is not supported, use default mean stats instead {}'.format(ds_name, mean_val))
+            return np.array(mean_val)
     return val[0, :], val[1, :]
 
 

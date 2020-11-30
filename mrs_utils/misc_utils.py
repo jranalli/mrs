@@ -246,7 +246,6 @@ def set_random_seed(seed_):
     """
     torch.manual_seed(seed_)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
     np.random.seed(seed_)
 
 
@@ -336,6 +335,8 @@ def get_files(path_list, extension):
     :param extension: regex that filters the desired files
     :return: list of files
     """
+    if isinstance(path_list, str):
+        path_list = [path_list]
     return natsorted(glob(os.path.join(*path_list, extension)))
 
 
@@ -451,4 +452,10 @@ def historical_process_flag(flags):
         flags['trainer']['gamma'] = 2
     if 'alpha' not in flags['trainer']:
         flags['trainer']['alpha'] = 0.25
+    for ds_flag in flags['ds_cfgs']:
+        if 'load_func' not in flags[ds_flag]:
+            flags[ds_flag]['load_func'] = 'default'
+        else:
+            assert flags[ds_flag]['load_func'] == 'default' or flags[ds_flag]['load_func'] == 'None'
+
     return flags

@@ -19,11 +19,11 @@ from torch import optim
 from torch.utils.data import DataLoader
 
 # Own modules
-from data import data_loader
+from data import data_loader, data_utils
 from network import network_utils, network_io
 from mrs_utils import misc_utils, metric_utils
 
-CONFIG_FILE = 'temp_unit_test_config.json'
+CONFIG_FILE = 'temp_config_dg.json'
 
 
 def read_config():
@@ -96,8 +96,14 @@ def train_model(args, device, parallel):
 
     train_val_loaders = {'train': [], 'valid': []}
     for ds_cfg in ds_cfgs:
+        if args[ds_cfg]['load_func'] == 'default':
+            load_func = data_utils.default_get_stats
+        else:
+            load_func = None
+
         mean, std = network_io.get_dataset_stats(args[ds_cfg]['ds_name'], args[ds_cfg]['data_dir'],
-                                                 mean_val=(eval(args[ds_cfg]['mean']), eval(args[ds_cfg]['std'])))
+                                                 mean_val=(eval(args[ds_cfg]['mean']), eval(args[ds_cfg]['std'])),
+                                                 load_func=load_func, file_list=args[ds_cfg]['train_file'])
         tsfm_train, tsfm_valid = network_io.create_tsfm(args, mean, std)
         train_loader = DataLoader(data_loader.get_loader(
             args[ds_cfg]['data_dir'], args[ds_cfg]['train_file'], transforms=tsfm_train,
@@ -107,14 +113,12 @@ def train_model(args, device, parallel):
         train_val_loaders['train'].append(train_loader)
 
         if 'valid_file' in args[ds_cfg]:
-            valid_loader = DataLoader(data_loader.get_loader(
+            valid_loader = DataLoader (data_loader.get_loader(
                 args[ds_cfg]['data_dir'], args[ds_cfg]['valid_file'], transforms=tsfm_valid,
                 n_class=args[ds_cfg]['class_num'], with_aux=with_aux),
                 batch_size=int(args[ds_cfg]['batch_size']), shuffle=False, num_workers=int(args[ds_cfg]['num_workers']))
             print('Training model on the {} dataset'.format(args[ds_cfg]['ds_name']))
             train_val_loaders['valid'].append(valid_loader)
-    mean, std = network_io.get_dataset_stats(args['dataset']['ds_name'], args['dataset']['data_dir'],
-                                             mean_val=(eval(args['dataset']['mean']), eval(args['dataset']['std'])))
 
     # train the model
     loss_dict = {}

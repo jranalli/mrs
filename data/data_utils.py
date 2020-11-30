@@ -177,8 +177,9 @@ def get_ds_stats(img_files):
     return ds_mean, ds_std
 
 
-def default_get_stats(img_dir):
-    rgb_imgs = natsorted(glob(os.path.join(img_dir, '*.jpg')))
+def default_get_stats(img_dir, file_list):
+    file_list = misc_utils.load_file(file_list)
+    rgb_imgs = [os.path.join(img_dir, a.strip().split(' ')[0]) for a in file_list]
     ds_mean, ds_std = get_ds_stats(rgb_imgs)
     return np.stack([ds_mean, ds_std], axis=0)
 
