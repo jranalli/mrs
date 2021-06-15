@@ -123,3 +123,14 @@ venv.bak/
 .mypy_cache/
 .gitignore
 __init__.py
+
+# geojson and other GIS files
+**/*.geojson
+**/*.cpg
+**/*.dbf
+**/*.prj
+**/*.shp
+**/*.shx
+
+# TensorBoard log files
+**/*tfevents*

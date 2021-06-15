@@ -23,7 +23,6 @@ DS_NAME = 'ct_finetune'
 def get_images(data_dir, valid_percent=0, split=False):
     rgb_files = natsorted(glob(os.path.join(data_dir, '*.jpg')))
     lbl_files = natsorted(glob(os.path.join(data_dir, '*.png')))
-    import pdb; pdb.set_trace()
     assert len(rgb_files) == len(lbl_files)
     # while True:
     #     valid_idx = np.random.randint(0, len(lbl_files))
@@ -46,7 +45,7 @@ def create_dataset(data_dir, save_dir, patch_size, pad, overlap, visualize=False
         save_dir, 'file_list_train.txt'), 'w+')
     record_file_valid = open(os.path.join(
         save_dir, 'file_list_valid.txt'), 'w+')
-    train_files, valid_files = get_images(data_dir)
+    train_files, valid_files = get_images(data_dir, valid_percent=0.3)
 
     for img_file, lbl_file in tqdm(train_files):
         prefix = os.path.splitext((os.path.basename(img_file)))[0]
@@ -98,8 +97,8 @@ def get_stats_pb(img_dir):
 
 
 if __name__ == '__main__':
-    ps = 512
+    ps = 500
     ol = 0
     pd = 0
-    create_dataset(data_dir=r'/home/wh145/data/ct_valid/new_100820',
-                   save_dir=r'/home/wh145/data/ct_valid/new_100820/ps_512', patch_size=(ps, ps), pad=pd, overlap=ol, visualize=False)
+    create_dataset(data_dir=r'/home/wh145/data/ct_new/random_2_1',
+                   save_dir=r'/home/wh145/data/ct_new/random_2_1/ps_500', patch_size=(ps, ps), pad=pd, overlap=ol, visualize=False)
