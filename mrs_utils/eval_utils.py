@@ -127,7 +127,7 @@ def compute_iou(coords_a, coords_b, size):
 
 
 class ObjectScorer(object):
-    def __init__(self, min_region=5, min_th=0.5, dilation_size=12, link_r=20, eps=2):
+    def __init__(self, min_region=5, min_th=0.5, dilation_size=12):
         """
         Object-wise scoring metric: the conf map instead of prediction map is needed
         The conf map will first be binarized by certain threshold, then any connected components
@@ -140,14 +140,10 @@ class ObjectScorer(object):
         FN: A gt has no prediction to be linked
         :param min_region: the smallest #pixels to form an object
         :param min_th: the threshold to binarize the conf map
-        :param link_r: the #pixels between two connected components to be grouped
-        :param eps: the epsilon in KDTree searching
         """
         self.min_region = min_region
         self.min_th = min_th
         self.dilation_size = dilation_size
-        self.link_r = link_r
-        self.eps = eps
 
     @staticmethod
     def _reg_to_centroids(reg_props):
@@ -211,26 +207,20 @@ class ObjectScorer(object):
         if self.dilation_size < 0 or not isinstance(self.dilation_size, int):
             return ValueError("Dilation size must be a positive integer")
         elif self.dilation_size > 0:
-            im_binary = dilation(im_binary, disk(self.dilation_size))
+            im_dilated = dilation(im_binary, disk(self.dilation_size))
 
-        im_label = measure.label(im_binary)
-        reg_props = measure.regionprops(im_label, conf_map)
-        # remove regions that are smaller than threshold
-        reg_props = [a for a in reg_props if a.area >= self.min_region]
-        # group objects
-        centroids = self._reg_to_centroids(reg_props)
-        if len(centroids) > 0:
-            # kdt = KDTree(centroids)
-            # connect_pair = kdt.query_pairs(self.link_r, eps=self.eps)
-            # groups = self._group_pairs(connect_pair, reg_props)
-            # return groups
-            return reg_props
-        else:
-            return []
+        dilated_label = measure.label(im_dilated)
+        pixel_grouped = np.multiply(im_binary, dilated_label)
+        pixel_grouped_reg_props = measure.regionprops(pixel_grouped, conf_map)
+
+        # Remove regions whose un-dilated area are lower than threshold
+        pixel_grouped_reg_props = [a for a in pixel_grouped_reg_props if a.area >= self.min_region]
+
+        return pixel_grouped_reg_props
 
 
-def score(pred, lbl, min_region=5, min_th=0.5, dilation_size=5, link_r=20, eps=2, iou_th=0.5):
-    obj_scorer = ObjectScorer(min_region, min_th, dilation_size, link_r, eps)
+def score(pred, lbl, min_region=5, min_th=0.5, dilation_size=5, iou_th=0.5):
+    obj_scorer = ObjectScorer(min_region, min_th, dilation_size)
 
     group_pred = obj_scorer.get_object_groups(pred)
     group_lbl =obj_scorer. get_object_groups(lbl)
@@ -265,11 +255,11 @@ def score(pred, lbl, min_region=5, min_th=0.5, dilation_size=5, link_r=20, eps=2
     return conf_list, true_list
 
 
-def batch_score(pred_files, lbl_files, min_region=5, min_th=0.5, link_r=20, eps=2, iou_th=0.5):
+def batch_score(pred_files, lbl_files, min_region=5, min_th=0.5, iou_th=0.5):
     conf, true = [], []
     for pred_file, lbl_file in tqdm(zip(pred_files, lbl_files), total=len(pred_files)):
         pred, lbl = misc_utils.load_file(pred_file), misc_utils.load_file(lbl_file)
-        conf_, true_ = score(pred, lbl, min_region, min_th, link_r, eps, iou_th)
+        conf_, true_ = score(pred, lbl, min_region, min_th, iou_th)
         conf.extend(conf_)
         true.extend(true_)
     return conf, true
@@ -346,8 +336,13 @@ def read_results(result_name, regex=None, sum_results=False, delta=1e-6, class_n
 
 
 def get_precision_recall(conf, true):
-    ap = average_precision_score(true, conf)
+    # ap = average_precision_score(true, conf)
     p, r, th = precision_recall_curve(true, conf)
+    p[0] = 0
+    r[0] = r[1] + 0.01
+
+    x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
+    ap = np.trapz(np.interp(x, r[::-1], p[::-1]), x)  # calculate ap with trapezoidal rule
     return ap, p, r, th
 
 
@@ -669,7 +664,7 @@ if __name__ == '__main__':
     rgb = misc_utils.load_file(rgb_file)
     lbl_img, conf_img = misc_utils.load_file(lbl_file) / 255, misc_utils.load_file(conf_file)
 
-    osc = ObjectScorer(min_region=5, min_th=0.5, link_r=10, eps=2)
+    osc = ObjectScorer(min_region=5, min_th=0.5)
     lbl_groups = osc.get_object_groups(lbl_img)
     conf_groups = osc.get_object_groups(conf_img)
     print(len(lbl_groups), len(conf_groups))

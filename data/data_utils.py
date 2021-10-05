@@ -30,8 +30,8 @@ def make_grid(tile_size, patch_size, overlap):
     max_h = tile_size[0] - patch_size[0]
     max_w = tile_size[1] - patch_size[1]
     if max_h > 0 and max_w > 0:
-        h_step = np.ceil(tile_size[0] / (patch_size[0] - overlap))
-        w_step = np.ceil(tile_size[1] / (patch_size[1] - overlap))
+        h_step = np.ceil(tile_size[0] / (patch_size[0] - overlap)).astype(int)
+        w_step = np.ceil(tile_size[1] / (patch_size[1] - overlap)).astype(int)
     else:
         h_step = 1
         w_step = 1

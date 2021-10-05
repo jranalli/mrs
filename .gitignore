@@ -134,3 +134,7 @@ __init__.py
 
 # TensorBoard log files
 **/*tfevents*
+
+# Own dataset
+data/ct_finetune/*
+data/sd_finetune/*
