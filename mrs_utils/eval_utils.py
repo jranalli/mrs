@@ -223,7 +223,7 @@ def score(pred, lbl, min_region=5, min_th=0.5, dilation_size=5, iou_th=0.5):
     obj_scorer = ObjectScorer(min_region, min_th, dilation_size)
 
     group_pred = obj_scorer.get_object_groups(pred)
-    group_lbl =obj_scorer. get_object_groups(lbl)
+    group_lbl = obj_scorer.get_object_groups(lbl)
 
     conf_list, true_list = [], []
     linked_pred = []
