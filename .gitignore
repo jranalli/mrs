@@ -136,6 +136,7 @@ __init__.py
 **/*tfevents*
 
 # Own dataset
-data/ct_finetune/*
-data/sd_finetune/*
-data/all_sd/*
+**/sd_finetune
+data/stats/builtin/sd_finetune*
+data/sd_finetune
+data/all_sd/
