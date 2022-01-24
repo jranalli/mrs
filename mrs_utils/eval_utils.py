@@ -583,8 +583,6 @@ class Evaluator:
             if visualize:
                 vis_utils.compare_figures([rgb, pred_img], (1, 2), fig_size=(12, 5))
 
-            # misc_utils.save_file(os.path.join(pred_dir, '{}{}.{}'.format(file_name, ext, file_ext)), pred_img)
-
 
 class BaseEnsemble(object):
     @staticmethod
