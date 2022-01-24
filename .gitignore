@@ -138,3 +138,4 @@ __init__.py
 # Own dataset
 data/ct_finetune/*
 data/sd_finetune/*
+data/all_sd/*

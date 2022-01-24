@@ -15,10 +15,10 @@ import toolman as tm
 from tqdm import tqdm
 from skimage import measure
 from skimage.morphology import dilation, disk
-from scipy.spatial import KDTree
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_softmax
 from sklearn.metrics import precision_recall_curve, average_precision_score
+from sklearn.metrics._ranking import _binary_clf_curve
 
 # PyTorch
 import torch
@@ -346,6 +346,15 @@ def get_precision_recall(conf, true):
     return ap, p, r, th
 
 
+def get_fps(conf, true):
+    
+    fps, tps, th = _binary_clf_curve(true, conf)
+    last_ind = tps.searchsorted(tps[-1])
+    sl = slice(last_ind, None, -1)
+    
+    return fps[sl]
+
+
 class Evaluator:
     def __init__(self, ds_name, data_dir, tsfm, device, load_func=None, infer=False, ensembler=None, **kwargs):
         ds_name = misc_utils.stem_string(ds_name)
@@ -406,24 +415,6 @@ class Evaluator:
             self.decode_func = None
             self.encode_func = None
             self.class_names = ['panel',]
-        # elif ds_name == 'ct_finetune':
-        #     from data.ct_finetune import preprocess
-        #     self.rgb_files, self.lbl_files = preprocess.get_images(
-        #         data_dir, **kwargs)
-        #     assert len(self.rgb_files) == len(self.lbl_files)
-        #     self.truth_val = 1
-        #     self.decode_func = None
-        #     self.encode_func = None
-        #     self.class_names = ['panel', ]
-        # elif ds_name == 'sd_finetune':
-        #     from data.sd_finetune import preprocess
-        #     self.rgb_files, self.lbl_files = preprocess.get_images(
-        #         data_dir, **kwargs)
-        #     assert len(self.rgb_files) == len(self.lbl_files)
-        #     self.truth_val = 255
-        #     self.decode_func = None
-        #     self.encode_func = None
-        #     self.class_names = ['panel', ]
         elif load_func:
             self.truth_val = kwargs.pop('truth_val', 1)
             self.decode_func = kwargs.pop('decode_func', None)
