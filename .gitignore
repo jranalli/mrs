@@ -19,8 +19,6 @@ model/log/
 model/log_pre/
 .idea/
 tasks/
-*.log
-my*
 
 # C extensions
 *.so
@@ -125,3 +123,20 @@ venv.bak/
 .mypy_cache/
 .gitignore
 __init__.py
+
+# geojson and other GIS files
+**/*.geojson
+**/*.cpg
+**/*.dbf
+**/*.prj
+**/*.shp
+**/*.shx
+
+# TensorBoard log files
+**/*tfevents*
+
+# Own dataset
+**/sd_finetune
+data/stats/builtin/sd_finetune*
+data/sd_finetune
+data/all_sd/

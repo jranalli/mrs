@@ -160,6 +160,9 @@ def get_dataset_stats(ds_name, img_dir, load_func=None, file_list=None,
         from data.spca import preprocess
         val = preprocess.get_stats_pb(img_dir)[0]
         print('Use {} mean std stats: {}'.format(ds_name, val))
+    elif ds_name == 'default':
+        val = np.array(mean_val)
+        print('Use {} mean std stats: {}'.format(ds_name, val))
     elif load_func:
         try:
             val = process_block.ValueComputeProcess(
