@@ -26,4 +26,4 @@ Code base and tutorials for the paper *SolarMapper: estimating solar array locat
 
 ### Array-wise performance evaluation
 
-## Please refer to the [original documentation of the MRS](https://github.com/waynehuu/mrs/blob/main/README.md) for more technical details about the framework.
+## Please refer to the [original documentation of the MRS framework](https://github.com/waynehuu/mrs/blob/main/README.md) for more technical details and more model architectures supported.
