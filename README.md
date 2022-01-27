@@ -26,4 +26,7 @@ Code base and tutorials for the paper *SolarMapper: estimating solar array locat
 
 ### Array-wise performance evaluation
 
+## Other links
+### [Fine-tuning dataset](https://figshare.com/articles/dataset/Connecticut_Solar_PV_Semantic_Segmentation_Dataset/18982199)
+### [Web visualization of final predictions over the state of Connecticut](https://wh145.pages.oit.duke.edu/solarMapper/)
 ## Please refer to the [original documentation of the MRS framework](https://github.com/waynehuu/mrs/blob/main/README.md) for more technical details and more model architectures supported.
