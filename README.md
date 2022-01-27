@@ -22,7 +22,7 @@ Code base, tutorials and other information for the paper *SolarMapper: estimatin
 
 ### [Dilation-based array grouping](solarmapper_demo/dilation_based_grouping/dilation_based_grouping.ipynb)
 
-### [Tile stratified sampling by building density](solarmapper_demo/building_density_tile_stratified_sampling/stratified_ms_building.ipynb)
+### [Tile stratified sampling by building density](solarmapper_demo/building_density_tile_stratified_sampling/building_density_stratified_sampling.ipynb)
 
 ### [Array-wise performance evaluation](solarmapper_demo/array_wise_evaluation/array_wise_evaluation.ipynb)
 
