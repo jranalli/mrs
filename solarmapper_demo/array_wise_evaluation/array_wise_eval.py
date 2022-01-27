@@ -114,7 +114,7 @@ def plot_object_curve(
         conf_tile, true_tile = eval_utils.score(
             conf_img, 
             lbl_img, 
-            min_size=params_dict['min_size'], 
+            min_region=params_dict['min_size'], 
             min_th=params_dict['min_th'] / 255, 
             dilation_size=params_dict['dilation_size'], 
             iou_th=params_dict['iou_th']
