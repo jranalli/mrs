@@ -1,7 +1,7 @@
 # SolarMapper with MRS (Models for Remote Sensing)
 ![SolarMapper flow chart](./solarmapper_demo/flow-chart.jpg)
 
-Code base and tutorials for the paper *SolarMapper: estimating solar array location, size, and capacity using deep learning and overhead imagery*.
+Code base, tutorials and other information for the paper *SolarMapper: estimating solar array location, size, and capacity using deep learning and overhead imagery*.
 
 ## Usage
 
@@ -20,13 +20,13 @@ Code base and tutorials for the paper *SolarMapper: estimating solar array locat
 
 ## Tutorials
 
-### [Dilation-based array grouping](./solarmapper_demo/dilation_based_grouping/dilation_based_grouping.ipynb)
+### [Dilation-based array grouping](solarmapper_demo/dilation_based_grouping/dilation_based_grouping.ipynb)
 
-### [Tile stratified sampling by building density](./solarmapper_demo/building_density_tile_stratified_sampling/stratified_ms_building.ipynb)
+### [Tile stratified sampling by building density](solarmapper_demo/building_density_tile_stratified_sampling/stratified_ms_building.ipynb)
 
-### Array-wise performance evaluation
+### [Array-wise performance evaluation](solarmapper_demo/array_wise_evaluation/array_wise_evaluation.ipynb)
 
 ## Other links
-### [Fine-tuning dataset](https://figshare.com/articles/dataset/Connecticut_Solar_PV_Semantic_Segmentation_Dataset/18982199)
+### [Connecticut annotated fine-tuning dataset](https://figshare.com/articles/dataset/Connecticut_Solar_PV_Semantic_Segmentation_Dataset/18982199)
 ### [Web visualization of final predictions over the state of Connecticut](https://wh145.pages.oit.duke.edu/solarMapper/)
 ## Please refer to the [original documentation of the MRS framework](https://github.com/waynehuu/mrs/blob/main/README.md) for more technical details and more model architectures supported.
