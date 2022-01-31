@@ -140,3 +140,7 @@ __init__.py
 data/stats/builtin/sd_finetune*
 data/sd_finetune
 data/all_sd/
+
+# SolarMapper demo source data
+**/townct*
+**/*.geojson
