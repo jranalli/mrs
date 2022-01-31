@@ -24,7 +24,11 @@ Code base, tutorials and other information for the paper *SolarMapper: estimatin
 
 ### [Tile stratified sampling by building density](solarmapper_demo/building_density_tile_stratified_sampling/building_density_stratified_sampling.ipynb)
 
-### [Array-wise performance evaluation](solarmapper_demo/array_wise_evaluation/array_wise_evaluation.ipynb)
+### [Array-wise performance evaluation](solarmapper_demo/results_eval_and_viz/array_wise_evaluation.ipynb)
+
+### [Connecticut municipality level analysis](solarmapper_demo/results_eval_and_viz/ct_municipality_level_analysis.ipynb)
+
+### [Pixel wise prediction visualization](solarmapper_demo/results_eval_and_viz/pixel_wise_visualization.ipynb)
 
 ## Other links
 ### [Connecticut annotated fine-tuning dataset](https://figshare.com/articles/dataset/Connecticut_Solar_PV_Semantic_Segmentation_Dataset/18982199)
