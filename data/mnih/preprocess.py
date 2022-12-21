@@ -16,7 +16,7 @@ from mrs_utils import misc_utils, process_block
 
 # Settings
 DS_NAME = 'MIT-Road'
-DATA_DIR = '/data/users/wh145/data/mnih/'
+DATA_DIR = 'F:\\mnih'
 # test set will be grabbed by get_images() and processed during testing
 SPLITS = ['train', 'valid']
 # sat (input), map (target)
@@ -120,7 +120,7 @@ def get_stats(img_dir):
 def get_stats_pb(img_dir=r'/home/wh145/data/mnih'):
     val = process_block.ValueComputeProcess(DS_NAME, os.path.join(os.path.dirname(__file__), '../stats/builtin'),
                                             os.path.join(os.path.dirname(__file__), '../stats/builtin/{}.npy'.format(DS_NAME)), func=get_stats).\
-        run(img_dir=r'/home/wh145/data/mnih').val
+        run(img_dir=r'F:\mnih').val
     val_test = val
     return val, val_test
 
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     ps = 512
     pd = 0
     ol = 0
-    save_dir = r'/data/users/wh145/processed_mnih/'
+    save_dir = 'F:\\mnih\\preprocessed'
     misc_utils.make_dir_if_not_exist(save_dir)
     patch_mnih(data_dir=DATA_DIR,
                save_dir=save_dir,

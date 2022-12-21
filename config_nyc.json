@@ -1,0 +1,34 @@
+{
+  "gpu": "0",
+  "encoder_name": "resnet50",
+  "decoder_name": "dlinknet",
+  "random_seed": 1,
+  "dataset": {
+    "ds_name": "nyc_pv",
+    "input_size": "(500, 500)",
+    "crop_size": "(500, 500)",
+    "class_num": 2,
+    "mean": "(0.470, 0.488, 0.479)",
+    "std": "(0.225, 0.206, 0.210)",
+    "data_dir": "F:\\solardnn\\nyc_mrs\\patches",
+    "train_file": "F:\\solardnn\\nyc_mrs\\file_list_train.txt",
+    "valid_file": "F:\\solardnn\\nyc_mrs\\file_list_valid.txt",
+    "batch_size": 5,
+    "num_workers": 1
+  },
+  "optimizer": {
+    "learn_rate_encoder": 1e-3,
+    "learn_rate_decoder": 1e-2,
+    "decay_rate": 0.1,
+    "decay_step": "[50]"
+  },
+  "trainer": {
+    "criterion_name": "xent,iou",
+    "bp_loss_idx": 0,
+    "epochs": 80,
+    "save_epoch": 5,
+    "resume_epoch": 0,
+    "finetune_dir": "None",
+    "save_root": "F:\\solardnn\\nyc_mrs\\model"
+  }
+}
